@@ -1090,7 +1090,7 @@ module GenSymIO {
                 var leadingSliceIndex = leadingSliceIndices[idx]:int;
                 var trailingSliceIndex = trailingSliceIndices[idx]:int;
 
-                var valuesList: list(uint(8), parSafe=true);
+                var valuesList: list(uint(8));
 
                 /*
                  * Verify if the current locale (idx) contains chars shuffled to the previous 
@@ -1728,12 +1728,18 @@ module GenSymIO {
      */
     private proc adjustForTrailingSlice(sliceIndex : int,
                                    charList : list(uint(8))) {
-        var valuesList: list(uint(8), parSafe=true);
+        var valuesList: list(uint(8));
         var indices: list(int);
         var i: int = 0;
         indices.append(0);
 
-        for value in charList(0..sliceIndex-1)  {
+        for j in 0..(sliceIndex-1) {
+            import Reflection.canResolveMethod;
+
+            var value = if canResolveMethod(charList, "getValue", j)
+                then charList.getValue(j)
+                else charList[j];
+
             valuesList.append(value:uint(8));
             if value == NULL_STRINGS_VALUE && i < sliceIndex-1 {
                 indices.append(i+1);
